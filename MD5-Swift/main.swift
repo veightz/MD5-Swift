@@ -29,7 +29,13 @@ func <<< (x: Word, n: Word) -> Word {
 struct MD5 {
     var rawString: String = "" {
         didSet {
-            println("raw text: \(rawString)")
+            buffer = [
+                0x67452301,
+                0xEFCDAB89,
+                0x98BADCFE,
+                0x10325476
+            ]
+
             transform(string: rawString)
         }
     }
@@ -54,7 +60,6 @@ struct MD5 {
             }
         }
         binaryString += " -> \(word)"
-        println(binaryString)
     }
     
     mutating func transform(var # string: String) -> () {
@@ -84,9 +89,7 @@ struct MD5 {
         :returns: 每个元素都是容量为16的Word数组
         */
         func encode(# string: String) -> [[Word]] {
-            println("开始对字符串:\(string) 编码")
             let stringLength:UInt64 = UInt64(count(string))
-            println("字符串的个数为\(count(string)), 相当于\(stringLength * 8)位")
             
             var bytes = [Byte]()
             for character in string.utf8 {
@@ -149,10 +152,7 @@ struct MD5 {
                 a = Word((UInt64(a) + UInt64(ac)) & 0xFFFFFFFF)
                 a = a <<< s
                 a = Word((UInt64(a) + UInt64(b)) & 0xFFFFFFFF)
-                println("a: \(a)")
-                println("b: \(b)")
-                println("c: \(c)")
-                println("d: \(d)")
+
                 return (a, b, c, d)
             }
             
@@ -217,13 +217,7 @@ struct MD5 {
             let bb = b
             let cc = c
             let dd = d
-            
-            println("buffer before transform:")
-            println("a: \(a)")
-            println("b: \(b)")
-            println("c: \(c)")
-            println("d: \(d)")
-            println("x: \(x)")
+
             /* Round 1. */
             /* Let [abcd k s i] denote the operation
             a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
@@ -235,27 +229,21 @@ struct MD5 {
             [ABCD 12  7 13]  [DABC 13 12 14]  [CDAB 14 17 15]  [BCDA 15 22 16]
             */
             (a, b, c, d) = FF(a, b, c, d, x: x[ 0], s: S11, ac: 0xd76aa478); /* 1 */
-            (a, b, c, d) = FF(d, a, b, c, x: x[ 1], s: S12, ac: 0xe8c7b756); /* 2 */
-            (a, b, c, d) = FF(c, d, a, b, x: x[ 2], s: S13, ac: 0x242070db); /* 3 */
-            (a, b, c, d) = FF(b, c, d, a, x: x[ 3], s: S14, ac: 0xc1bdceee); /* 4 */
+            (d, a, b, c) = FF(d, a, b, c, x: x[ 1], s: S12, ac: 0xe8c7b756); /* 2 */
+            (c, d, a, b) = FF(c, d, a, b, x: x[ 2], s: S13, ac: 0x242070db); /* 3 */
+            (b, c, d, a) = FF(b, c, d, a, x: x[ 3], s: S14, ac: 0xc1bdceee); /* 4 */
             (a, b, c, d) = FF(a, b, c, d, x: x[ 4], s: S11, ac: 0xf57c0faf); /* 5 */
-            (a, b, c, d) = FF(d, a, b, c, x: x[ 5], s: S12, ac: 0x4787c62a); /* 6 */
-            (a, b, c, d) = FF(c, d, a, b, x: x[ 6], s: S13, ac: 0xa8304613); /* 7 */
-            (a, b, c, d) = FF(b, c, d, a, x: x[ 7], s: S14, ac: 0xfd469501); /* 8 */
+            (d, a, b, c) = FF(d, a, b, c, x: x[ 5], s: S12, ac: 0x4787c62a); /* 6 */
+            (c, d, a, b) = FF(c, d, a, b, x: x[ 6], s: S13, ac: 0xa8304613); /* 7 */
+            (b, c, d, a) = FF(b, c, d, a, x: x[ 7], s: S14, ac: 0xfd469501); /* 8 */
             (a, b, c, d) = FF(a, b, c, d, x: x[ 8], s: S11, ac: 0x698098d8); /* 9 */
-            (a, b, c, d) = FF(d, a, b, c, x: x[ 9], s: S12, ac: 0x8b44f7af); /* 10 */
-            (a, b, c, d) = FF(c, d, a, b, x: x[10], s: S13, ac: 0xffff5bb1); /* 11 */
-            (a, b, c, d) = FF(b, c, d, a, x: x[11], s: S14, ac: 0x895cd7be); /* 12 */
+            (d, a, b, c) = FF(d, a, b, c, x: x[ 9], s: S12, ac: 0x8b44f7af); /* 10 */
+            (c, d, a, b) = FF(c, d, a, b, x: x[10], s: S13, ac: 0xffff5bb1); /* 11 */
+            (b, c, d, a) = FF(b, c, d, a, x: x[11], s: S14, ac: 0x895cd7be); /* 12 */
             (a, b, c, d) = FF(a, b, c, d, x: x[12], s: S11, ac: 0x6b901122); /* 13 */
-            (a, b, c, d) = FF(d, a, b, c, x: x[13], s: S12, ac: 0xfd987193); /* 14 */
-            (a, b, c, d) = FF(c, d, a, b, x: x[14], s: S13, ac: 0xa679438e); /* 15 */
-            (a, b, c, d) = FF(b, c, d, a, x: x[15], s: S14, ac: 0x49b40821); /* 16 */
-            println()
-            println("after round 1")
-            println("a: \(a)")
-            println("b: \(b)")
-            println("c: \(c)")
-            println("d: \(d)")
+            (d, a, b, c) = FF(d, a, b, c, x: x[13], s: S12, ac: 0xfd987193); /* 14 */
+            (c, d, a, b) = FF(c, d, a, b, x: x[14], s: S13, ac: 0xa679438e); /* 15 */
+            (b, c, d, a) = FF(b, c, d, a, x: x[15], s: S14, ac: 0x49b40821); /* 16 */
             
             /* Round 2. */
             /* Let [abcd k s i] denote the operation
@@ -268,27 +256,21 @@ struct MD5 {
             [ABCD 13  5 29]  [DABC  2  9 30]  [CDAB  7 14 31]  [BCDA 12 20 32]
             */
             (a, b, c, d) = GG(a, b, c, d, x: x[ 1], s: S21, ac: 0xf61e2562); /* 17 */
-            (a, b, c, d) = GG(d, a, b, c, x: x[ 6], s: S22, ac: 0xc040b340); /* 18 */
-            (a, b, c, d) = GG(c, d, a, b, x: x[11], s: S23, ac: 0x265e5a51); /* 19 */
-            (a, b, c, d) = GG(b, c, d, a, x: x[ 0], s: S24, ac: 0xe9b6c7aa); /* 20 */
+            (d, a, b, c) = GG(d, a, b, c, x: x[ 6], s: S22, ac: 0xc040b340); /* 18 */
+            (c, d, a, b) = GG(c, d, a, b, x: x[11], s: S23, ac: 0x265e5a51); /* 19 */
+            (b, c, d, a) = GG(b, c, d, a, x: x[ 0], s: S24, ac: 0xe9b6c7aa); /* 20 */
             (a, b, c, d) = GG(a, b, c, d, x: x[ 5], s: S21, ac: 0xd62f105d); /* 21 */
-            (a, b, c, d) = GG(d, a, b, c, x: x[10], s: S22, ac:  0x2441453); /* 22 */
-            (a, b, c, d) = GG(c, d, a, b, x: x[15], s: S23, ac: 0xd8a1e681); /* 23 */
-            (a, b, c, d) = GG(b, c, d, a, x: x[ 4], s: S24, ac: 0xe7d3fbc8); /* 24 */
+            (d, a, b, c) = GG(d, a, b, c, x: x[10], s: S22, ac:  0x2441453); /* 22 */
+            (c, d, a, b) = GG(c, d, a, b, x: x[15], s: S23, ac: 0xd8a1e681); /* 23 */
+            (b, c, d, a) = GG(b, c, d, a, x: x[ 4], s: S24, ac: 0xe7d3fbc8); /* 24 */
             (a, b, c, d) = GG(a, b, c, d, x: x[ 9], s: S21, ac: 0x21e1cde6); /* 25 */
-            (a, b, c, d) = GG(d, a, b, c, x: x[14], s: S22, ac: 0xc33707d6); /* 26 */
-            (a, b, c, d) = GG(c, d, a, b, x: x[ 3], s: S23, ac: 0xf4d50d87); /* 27 */
-            (a, b, c, d) = GG(b, c, d, a, x: x[ 8], s: S24, ac: 0x455a14ed); /* 28 */
+            (d, a, b, c) = GG(d, a, b, c, x: x[14], s: S22, ac: 0xc33707d6); /* 26 */
+            (c, d, a, b) = GG(c, d, a, b, x: x[ 3], s: S23, ac: 0xf4d50d87); /* 27 */
+            (b, c, d, a) = GG(b, c, d, a, x: x[ 8], s: S24, ac: 0x455a14ed); /* 28 */
             (a, b, c, d) = GG(a, b, c, d, x: x[13], s: S21, ac: 0xa9e3e905); /* 29 */
-            (a, b, c, d) = GG(d, a, b, c, x: x[ 2], s: S22, ac: 0xfcefa3f8); /* 30 */
-            (a, b, c, d) = GG(c, d, a, b, x: x[ 7], s: S23, ac: 0x676f02d9); /* 31 */
-            (a, b, c, d) = GG(b, c, d, a, x: x[12], s: S24, ac: 0x8d2a4c8a); /* 32 */
-            println()
-            println("after round 2")
-            println("a: \(a)")
-            println("b: \(b)")
-            println("c: \(c)")
-            println("d: \(d)")
+            (d, a, b, c) = GG(d, a, b, c, x: x[ 2], s: S22, ac: 0xfcefa3f8); /* 30 */
+            (c, d, a, b) = GG(c, d, a, b, x: x[ 7], s: S23, ac: 0x676f02d9); /* 31 */
+            (b, c, d, a) = GG(b, c, d, a, x: x[12], s: S24, ac: 0x8d2a4c8a); /* 32 */
             
             /* Round 3. */
             /* Let [abcd k s t] denote the operation
@@ -301,27 +283,21 @@ struct MD5 {
             [ABCD  9  4 45]  [DABC 12 11 46]  [CDAB 15 16 47]  [BCDA  2 23 48]
             */
             (a, b, c, d) = HH(a, b, c, d, x: x[ 5], s: S31, ac: 0xfffa3942); /* 33 */
-            (a, b, c, d) = HH(d, a, b, c, x: x[ 8], s: S32, ac: 0x8771f681); /* 34 */
-            (a, b, c, d) = HH(c, d, a, b, x: x[11], s: S33, ac: 0x6d9d6122); /* 35 */
-            (a, b, c, d) = HH(b, c, d, a, x: x[14], s: S34, ac: 0xfde5380c); /* 36 */
+            (d, a, b, c) = HH(d, a, b, c, x: x[ 8], s: S32, ac: 0x8771f681); /* 34 */
+            (c, d, a, b) = HH(c, d, a, b, x: x[11], s: S33, ac: 0x6d9d6122); /* 35 */
+            (b, c, d, a) = HH(b, c, d, a, x: x[14], s: S34, ac: 0xfde5380c); /* 36 */
             (a, b, c, d) = HH(a, b, c, d, x: x[ 1], s: S31, ac: 0xa4beea44); /* 37 */
-            (a, b, c, d) = HH(d, a, b, c, x: x[ 4], s: S32, ac: 0x4bdecfa9); /* 38 */
-            (a, b, c, d) = HH(c, d, a, b, x: x[ 7], s: S33, ac: 0xf6bb4b60); /* 39 */
-            (a, b, c, d) = HH(b, c, d, a, x: x[10], s: S34, ac: 0xbebfbc70); /* 40 */
+            (d, a, b, c) = HH(d, a, b, c, x: x[ 4], s: S32, ac: 0x4bdecfa9); /* 38 */
+            (c, d, a, b) = HH(c, d, a, b, x: x[ 7], s: S33, ac: 0xf6bb4b60); /* 39 */
+            (b, c, d, a) = HH(b, c, d, a, x: x[10], s: S34, ac: 0xbebfbc70); /* 40 */
             (a, b, c, d) = HH(a, b, c, d, x: x[13], s: S31, ac: 0x289b7ec6); /* 41 */
-            (a, b, c, d) = HH(d, a, b, c, x: x[ 0], s: S32, ac: 0xeaa127fa); /* 42 */
-            (a, b, c, d) = HH(c, d, a, b, x: x[ 3], s: S33, ac: 0xd4ef3085); /* 43 */
-            (a, b, c, d) = HH(b, c, d, a, x: x[ 6], s: S34, ac:  0x4881d05); /* 44 */
+            (d, a, b, c) = HH(d, a, b, c, x: x[ 0], s: S32, ac: 0xeaa127fa); /* 42 */
+            (c, d, a, b) = HH(c, d, a, b, x: x[ 3], s: S33, ac: 0xd4ef3085); /* 43 */
+            (b, c, d, a) = HH(b, c, d, a, x: x[ 6], s: S34, ac:  0x4881d05); /* 44 */
             (a, b, c, d) = HH(a, b, c, d, x: x[ 9], s: S31, ac: 0xd9d4d039); /* 45 */
-            (a, b, c, d) = HH(d, a, b, c, x: x[12], s: S32, ac: 0xe6db99e5); /* 46 */
-            (a, b, c, d) = HH(c, d, a, b, x: x[15], s: S33, ac: 0x1fa27cf8); /* 47 */
-            (a, b, c, d) = HH(b, c, d, a, x: x[ 2], s: S34, ac: 0xc4ac5665); /* 48 */
-            println()
-            println("after round 3")
-            println("a: \(a)")
-            println("b: \(b)")
-            println("c: \(c)")
-            println("d: \(d)")
+            (d, a, b, c) = HH(d, a, b, c, x: x[12], s: S32, ac: 0xe6db99e5); /* 46 */
+            (c, d, a, b) = HH(c, d, a, b, x: x[15], s: S33, ac: 0x1fa27cf8); /* 47 */
+            (b, c, d, a) = HH(b, c, d, a, x: x[ 2], s: S34, ac: 0xc4ac5665); /* 48 */
             
             /* Round 4. */
             /* Let [abcd k s t] denote the operation
@@ -334,27 +310,21 @@ struct MD5 {
             [ABCD  4  6 61]  [DABC 11 10 62]  [CDAB  2 15 63]  [BCDA  9 21 64]
             */
             (a, b, c, d) = II(a, b, c, d, x: x[ 0], s: S41, ac: 0xf4292244); /* 49 */
-            (a, b, c, d) = II(d, a, b, c, x: x[ 7], s: S42, ac: 0x432aff97); /* 50 */
-            (a, b, c, d) = II(c, d, a, b, x: x[14], s: S43, ac: 0xab9423a7); /* 51 */
-            (a, b, c, d) = II(b, c, d, a, x: x[ 5], s: S44, ac: 0xfc93a039); /* 52 */
+            (d, a, b, c) = II(d, a, b, c, x: x[ 7], s: S42, ac: 0x432aff97); /* 50 */
+            (c, d, a, b) = II(c, d, a, b, x: x[14], s: S43, ac: 0xab9423a7); /* 51 */
+            (b, c, d, a) = II(b, c, d, a, x: x[ 5], s: S44, ac: 0xfc93a039); /* 52 */
             (a, b, c, d) = II(a, b, c, d, x: x[12], s: S41, ac: 0x655b59c3); /* 53 */
-            (a, b, c, d) = II(d, a, b, c, x: x[ 3], s: S42, ac: 0x8f0ccc92); /* 54 */
-            (a, b, c, d) = II(c, d, a, b, x: x[10], s: S43, ac: 0xffeff47d); /* 55 */
-            (a, b, c, d) = II(b, c, d, a, x: x[ 1], s: S44, ac: 0x85845dd1); /* 56 */
+            (d, a, b, c) = II(d, a, b, c, x: x[ 3], s: S42, ac: 0x8f0ccc92); /* 54 */
+            (c, d, a, b) = II(c, d, a, b, x: x[10], s: S43, ac: 0xffeff47d); /* 55 */
+            (b, c, d, a) = II(b, c, d, a, x: x[ 1], s: S44, ac: 0x85845dd1); /* 56 */
             (a, b, c, d) = II(a, b, c, d, x: x[ 8], s: S41, ac: 0x6fa87e4f); /* 57 */
-            (a, b, c, d) = II(d, a, b, c, x: x[15], s: S42, ac: 0xfe2ce6e0); /* 58 */
-            (a, b, c, d) = II(c, d, a, b, x: x[ 6], s: S43, ac: 0xa3014314); /* 59 */
-            (a, b, c, d) = II(b, c, d, a, x: x[13], s: S44, ac: 0x4e0811a1); /* 60 */
+            (d, a, b, c) = II(d, a, b, c, x: x[15], s: S42, ac: 0xfe2ce6e0); /* 58 */
+            (c, d, a, b) = II(c, d, a, b, x: x[ 6], s: S43, ac: 0xa3014314); /* 59 */
+            (b, c, d, a) = II(b, c, d, a, x: x[13], s: S44, ac: 0x4e0811a1); /* 60 */
             (a, b, c, d) = II(a, b, c, d, x: x[ 4], s: S41, ac: 0xf7537e82); /* 61 */
-            (a, b, c, d) = II(d, a, b, c, x: x[11], s: S42, ac: 0xbd3af235); /* 62 */
-            (a, b, c, d) = II(c, d, a, b, x: x[ 2], s: S43, ac: 0x2ad7d2bb); /* 63 */
-            (a, b, c, d) = II(b, c, d, a, x: x[ 9], s: S44, ac: 0xeb86d391); /* 64 */
-            println()
-            println("after round 4")
-            println("a: \(a)")
-            println("b: \(b)")
-            println("c: \(c)")
-            println("d: \(d)")
+            (d, a, b, c) = II(d, a, b, c, x: x[11], s: S42, ac: 0xbd3af235); /* 62 */
+            (c, d, a, b) = II(c, d, a, b, x: x[ 2], s: S43, ac: 0x2ad7d2bb); /* 63 */
+            (b, c, d, a) = II(b, c, d, a, x: x[ 9], s: S44, ac: 0xeb86d391); /* 64 */
             
             /* Then perform the following additions. (That is increment each
             of the four registers by the value it had before this block
@@ -371,31 +341,16 @@ struct MD5 {
             c = Word((UInt64(c) + UInt64(cc)) & 0xFFFFFFFF)
             d = Word((UInt64(d) + UInt64(dd)) & 0xFFFFFFFF)
             
-            
-            println("buffer after transform:")
-            println("a: \(a)")
-            println("b: \(b)")
-            println("c: \(c)")
-            println("d: \(d)")
-            
             return (a, b, c, d)
         }
         
         let wordsArray = encode(string: rawString)
         var tempBuffer = (a: buffer[0], b: buffer[1], c: buffer[2], d: buffer[3])
         for words in wordsArray {
-            println("round 1: ")
-            println("a: \(log(tempBuffer.a))")
-            println("b: \(log(tempBuffer.b))")
-            println("c: \(log(tempBuffer.c))")
-            println("d: \(log(tempBuffer.d))")
             tempBuffer = roundProcess(tempBuffer.a, tempBuffer.b, tempBuffer.c, tempBuffer.d, wordsArray: words)
-            println("tempBuffer: \(tempBuffer)")
         }
         buffer = [tempBuffer.a, tempBuffer.b, tempBuffer.c, tempBuffer.d]
-
         let string = decode(words: buffer)
-        println(string)
     }
     
     private func decode(# words: [Word]) -> String {
@@ -407,12 +362,13 @@ struct MD5 {
         var string = ""
         for i in 0..<(words.count) {
             let word = words[i]
-            for j in 0...7 {
-                let s = easyMap[(UInt32(word) >> UInt32((7 - j) * 4)) & 0xF]!
-                string.append(s)
+            for j in 0...3 {
+                let s0 = easyMap[(UInt32(word) >> UInt32(j * 8 + 4)) & 0xF]!
+                let s1 = easyMap[(UInt32(word) >> UInt32(j * 8)) & 0xF]!
+                string.append(s0)
+                string.append(s1)
             }
         }
-        println(string)
         return string
     }
 }
@@ -421,20 +377,18 @@ struct MD5 {
 
 
 
-/*
-We first define four auxiliary functions that each take as input
-three 32-bit words and produce as output one 32-bit word.
 
-    F(X,Y,Z) = XY v not(X) Z
-    G(X,Y,Z) = XZ v Y not(Z)
-    H(X,Y,Z) = X xor Y xor Z
-    I(X,Y,Z) = Y xor (X v not(Z))
-
-*/
 
 
 
 
 var md5 = MD5()
 md5.rawString = "abc"
+println("\(md5.rawString) ==> \(md5.checksum)")
+
+md5.rawString = "a"
+println("\(md5.rawString) ==> \(md5.checksum)")
+
+md5.rawString = "message digest"
+println("\(md5.rawString) ==> \(md5.checksum)")
 
