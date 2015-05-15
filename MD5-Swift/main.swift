@@ -373,15 +373,6 @@ struct MD5 {
     }
 }
 
-
-
-
-
-
-
-
-
-
 var md5 = MD5()
 md5.rawString = "abc"
 println("\(md5.rawString) ==> \(md5.checksum)")
@@ -390,5 +381,14 @@ md5.rawString = "a"
 println("\(md5.rawString) ==> \(md5.checksum)")
 
 md5.rawString = "message digest"
+println("\(md5.rawString) ==> \(md5.checksum)")
+
+md5.rawString = "abcdefghijklmnopqrstuvwxyz"
+println("\(md5.rawString) ==> \(md5.checksum)")
+
+md5.rawString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+println("\(md5.rawString) ==> \(md5.checksum)")
+
+md5.rawString = "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 println("\(md5.rawString) ==> \(md5.checksum)")
 
