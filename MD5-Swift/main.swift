@@ -99,27 +99,24 @@ struct MD5 {
                 var paddingWords = [Byte](count: Int(charactersPaddingLength / 8), repeatedValue: 0)
                 paddingWords[0] = 0x80
                 bytes.extend(paddingWords)
-                paddingWords.count
-                bytes.count
             }
             
             var words = [Word]()
             for var i = 0; i < bytes.count; i = i + 4 {
-                let word: Word = (Word(bytes[i]) << 24)
-                    | (Word(bytes[i + 1]) << 16)
-                    | (Word(bytes[i + 2]) << 8)
-                    | (Word(bytes[i + 3]) << 0)
+                let word: Word = (Word(bytes[i]) << 0)
+                    | (Word(bytes[i + 1]) << 8)
+                    | (Word(bytes[i + 2]) << 16)
+                    | (Word(bytes[i + 3]) << 24)
                 words.append(word)
             }
             
             //  Mark: 生成长度补位编码
             var lengthPaddingWords = [Word](count: 2, repeatedValue: 0)
-            lengthPaddingWords[0] = Word(stringLength >> 32 & 0xFFFFFFFF)
-            lengthPaddingWords[1] = Word(stringLength & 0xFFFFFFFF)
+            let bitsCount: UInt64 = stringLength << 3
+            lengthPaddingWords[1] = Word(bitsCount >> 32 & 0xFFFFFFFF)
+            lengthPaddingWords[0] = Word(bitsCount & 0xFFFFFFFF)
             
             words.extend(lengthPaddingWords)
-            println(words)
-            println(words.count * 32)
             
             let wordsCollectionCount = words.count/16
             var wordsCollection = [[Word]]()
@@ -152,6 +149,10 @@ struct MD5 {
                 a = Word((UInt64(a) + UInt64(ac)) & 0xFFFFFFFF)
                 a = a <<< s
                 a = Word((UInt64(a) + UInt64(b)) & 0xFFFFFFFF)
+                println("a: \(a)")
+                println("b: \(b)")
+                println("c: \(c)")
+                println("d: \(d)")
                 return (a, b, c, d)
             }
             
@@ -222,7 +223,7 @@ struct MD5 {
             println("b: \(b)")
             println("c: \(c)")
             println("d: \(d)")
-            
+            println("x: \(x)")
             /* Round 1. */
             /* Let [abcd k s i] denote the operation
             a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
@@ -249,7 +250,12 @@ struct MD5 {
             (a, b, c, d) = FF(d, a, b, c, x: x[13], s: S12, ac: 0xfd987193); /* 14 */
             (a, b, c, d) = FF(c, d, a, b, x: x[14], s: S13, ac: 0xa679438e); /* 15 */
             (a, b, c, d) = FF(b, c, d, a, x: x[15], s: S14, ac: 0x49b40821); /* 16 */
-            
+            println()
+            println("after round 1")
+            println("a: \(a)")
+            println("b: \(b)")
+            println("c: \(c)")
+            println("d: \(d)")
             
             /* Round 2. */
             /* Let [abcd k s i] denote the operation
@@ -277,6 +283,12 @@ struct MD5 {
             (a, b, c, d) = GG(d, a, b, c, x: x[ 2], s: S22, ac: 0xfcefa3f8); /* 30 */
             (a, b, c, d) = GG(c, d, a, b, x: x[ 7], s: S23, ac: 0x676f02d9); /* 31 */
             (a, b, c, d) = GG(b, c, d, a, x: x[12], s: S24, ac: 0x8d2a4c8a); /* 32 */
+            println()
+            println("after round 2")
+            println("a: \(a)")
+            println("b: \(b)")
+            println("c: \(c)")
+            println("d: \(d)")
             
             /* Round 3. */
             /* Let [abcd k s t] denote the operation
@@ -304,6 +316,12 @@ struct MD5 {
             (a, b, c, d) = HH(d, a, b, c, x: x[12], s: S32, ac: 0xe6db99e5); /* 46 */
             (a, b, c, d) = HH(c, d, a, b, x: x[15], s: S33, ac: 0x1fa27cf8); /* 47 */
             (a, b, c, d) = HH(b, c, d, a, x: x[ 2], s: S34, ac: 0xc4ac5665); /* 48 */
+            println()
+            println("after round 3")
+            println("a: \(a)")
+            println("b: \(b)")
+            println("c: \(c)")
+            println("d: \(d)")
             
             /* Round 4. */
             /* Let [abcd k s t] denote the operation
@@ -331,6 +349,12 @@ struct MD5 {
             (a, b, c, d) = II(d, a, b, c, x: x[11], s: S42, ac: 0xbd3af235); /* 62 */
             (a, b, c, d) = II(c, d, a, b, x: x[ 2], s: S43, ac: 0x2ad7d2bb); /* 63 */
             (a, b, c, d) = II(b, c, d, a, x: x[ 9], s: S44, ac: 0xeb86d391); /* 64 */
+            println()
+            println("after round 4")
+            println("a: \(a)")
+            println("b: \(b)")
+            println("c: \(c)")
+            println("d: \(d)")
             
             /* Then perform the following additions. (That is increment each
             of the four registers by the value it had before this block
@@ -412,5 +436,5 @@ three 32-bit words and produce as output one 32-bit word.
 
 
 var md5 = MD5()
-md5.rawString = "123"
+md5.rawString = "abc"
 
